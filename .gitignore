@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller / Build
+/build/
+/dist/
+*.spec
+
+# Pastas da ferramenta
+orcamentos_marcados/
+
+# Ambientes virtuais (opcional)
+venv/
+env/
+.env
