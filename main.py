@@ -90,8 +90,19 @@ class PDFProtectorApp(ctk.CTk):
         self.btn_process.grid(row=1, column=0, padx=20, pady=(0, 10), sticky="ew")
 
         # Área de Log
-        self.log_textbox = ctk.CTkTextbox(self, height=150, state="disabled")
+        self.log_textbox = ctk.CTkTextbox(self, height=150)
         self.log_textbox.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="nsew")
+        
+        instrucoes = (
+            "▶ INSTRUÇÕES BÁSICAS:\n"
+            "1. Selecione a pasta onde se encontram os PDFs originais do projeto.\n"
+            "2. Preencha todos os campos do formulário para garantir a responsabilização.\n"
+            "3. Clique em PROCESSAR PDFs.\n\n"
+            "Repositório / Documentação Oficial:\n"
+            "https://github.com/Sil-SP/privacy_watermark"
+        )
+        self.log_textbox.insert("0.0", instrucoes)
+        self.log_textbox.configure(state="disabled")
 
     def select_folder(self):
         folder_selected = filedialog.askdirectory(title="Selecione a Pasta com os PDFs")
