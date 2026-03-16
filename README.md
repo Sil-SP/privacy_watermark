@@ -7,8 +7,9 @@ Todo processamento ocorre estritamente de maneira offline, dentro da máquina do
 ## Como funciona
 1. A ferramenta lê todos os arquivos `.pdf` da pasta selecionada de origem.
 2. É gerada, dinamicamente, uma primeira página de **Aviso Legal e Termo de Confidencialidade** (Disclaimer) em formato A4 que é inserida nativamente no princípio do PDF.
-3. Todas as páginas originais subsequentes do projeto arquitetônico/elétrico recebem uma marca d'água semi-transparente apontando para o receptor confidencial selecionado, adequando dinamicamente a fonte consoante ao tamanho da folha (quer seja um A4, A3, A0 etc).
-4. As cópias alteradas são salvas na subpasta `orcamentos_marcados/`, localizada obrigatoriamente dentro da raiz de origem, não sendo os originais deletados contanto. 
+3. Todas as páginas originais subsequentes do projeto arquitetônico/elétrico recebem uma marca d'água com **15% de opacidade** apontando para o receptor confidencial selecionado. O sistema conta com correção avançada de rotação (`/Rotate`) e adequa dinamicamente a fonte consoante ao tamanho e formato da folha (quer seja um A4, A3, ou gigantesca prancha A0 nativa ou invertida).
+4. As cópias alteradas não-destrutivas são salvas sob uma subpasta dinâmica batizada com o **nome exato da empresa/receptor preenchido** localmente, estando localizada obrigatoriamente dentro da raiz de origem para organização de orçamentos.  
+5. Os campos da interface de preenchimento contam com validação bloqueadora, impedindo que espaços em branco ou vazios passem ou poluam os metadados do projeto.
 
 ---
 

@@ -110,8 +110,10 @@ class PDFProtectorApp(ctk.CTk):
         if not self.folder_path.get():
             messagebox.showwarning("Aviso", "Selecione a pasta de origem primeiro!")
             return
-        if not self.var_cedente.get() or not self.var_projeto.get() or not self.var_receptor.get():
-            messagebox.showwarning("Aviso", "Preencha todos os campos do formulário!")
+            
+        # Verifica se os campos não estão vazios ou contêm apenas espaços
+        if not self.var_cedente.get().strip() or not self.var_projeto.get().strip() or not self.var_receptor.get().strip():
+            messagebox.showwarning("Aviso", "Preencha todos os campos do formulário (Cedente, Projeto e Receptor) obrigatoriamente!")
             return
 
         # Desabilita o botão para evitar múltiplos cliques
@@ -172,15 +174,20 @@ class PDFProtectorApp(ctk.CTk):
         reader = PdfReader(packet)
         return reader.pages[0]
 
-    def create_watermark(self, width, height, text):
+    def create_watermark(self, width, height, rotation, text):
         packet = io.BytesIO()
         c = canvas.Canvas(packet, pagesize=(width, height))
         
-        # Cor cinza com ~30% de opacidade
-        c.setFillColor(Color(0.5, 0.5, 0.5, alpha=0.3))
+        # Cor cinza com 15% de opacidade
+        c.setFillColor(Color(0.5, 0.5, 0.5, alpha=0.15))
         
-        # Calcula tamanho da fonte baseado na diagonal da folha para escalar dinamicamente
-        diag = math.sqrt(width**2 + height**2)
+        # Resolve dimensões visuais considerando se a página tem rotação de 90 ou 270 graus
+        is_rotated = (rotation % 180) != 0
+        w_vis = height if is_rotated else width
+        h_vis = width if is_rotated else height
+        
+        # Calcula tamanho da fonte baseado na diagonal da folha visual para escalar dinamicamente
+        diag = math.sqrt(w_vis**2 + h_vis**2)
         text_length = max(len(text), 1)
         font_size = (0.8 * diag) / (text_length * 0.5)
         # Limita o tamanho da fonte para não ficar nem gigantesca nem minúscula
@@ -188,10 +195,15 @@ class PDFProtectorApp(ctk.CTk):
 
         c.setFont("Helvetica-Bold", font_size)
         
-        # Ângulo de rotação da diagonal
-        angle = math.degrees(math.atan2(height, width))
+        # Ângulo de rotação da diagonal visual
+        angle = math.degrees(math.atan2(h_vis, w_vis))
         
         c.translate(width / 2, height / 2)
+        
+        # Desfazer a rotação do leitor no sentido horário girando o canvas no sentido anti-horário
+        c.rotate(rotation)
+        
+        # Aplicar o ângulo desejado para o texto
         c.rotate(angle)
         
         # Centraliza o texto verticalmente também aplicando um offset usando parte do tamanho da fonte
@@ -204,7 +216,14 @@ class PDFProtectorApp(ctk.CTk):
 
     def process_pdfs(self):
         origin = Path(self.folder_path.get())
-        output_dir = origin / "orcamentos_marcados"
+        
+        # Sanitiza o nome do receptor para criar uma pasta válida no sistema (remove caracteres proibidos do Windows)
+        nome_receptor = self.var_receptor.get().strip()
+        safe_folder_name = "".join(c for c in nome_receptor if c.isalnum() or c in (' ', '-', '_')).rstrip()
+        if not safe_folder_name:
+            safe_folder_name = "orcamentos_marcados"
+            
+        output_dir = origin / safe_folder_name
         
         try:
             output_dir.mkdir(exist_ok=True)
@@ -247,8 +266,11 @@ class PDFProtectorApp(ctk.CTk):
                     width = abs(float(box.right - box.left))
                     height = abs(float(box.top - box.bottom))
                     
+                    # Obter a rotação da página para corrigir PDFs girados nativamente
+                    rotation = page.rotation if hasattr(page, 'rotation') and isinstance(page.rotation, int) else 0
+                    
                     # Cria a marca d'água dinamicamente de acordo com o tamanho local daquela prancha
-                    wm_page = self.create_watermark(width, height, watermark_text)
+                    wm_page = self.create_watermark(width, height, rotation, watermark_text)
                     page.merge_page(wm_page)
                     
                     writer.add_page(page)
