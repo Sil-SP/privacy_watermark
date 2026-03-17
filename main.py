@@ -156,9 +156,13 @@ class PDFProtectorApp(ctk.CTk):
             f"Receptor autorizado: {self.var_receptor.get()}"
         ]
         
-        for line in info_lines:
-            c.drawString(50, y, line)
-            y -= 25
+        # Usa o textwrap para não deixar o texto da interface vazar as margens da página A4
+        for full_line in info_lines:
+            wrapped_lines = textwrap.wrap(full_line, width=70) # Limite de 70 caracteres por linha para fonte 12
+            for line in wrapped_lines:
+                c.drawString(50, y, line)
+                y -= 20 # Espaçamento entre linhas do mesmo item
+            y -= 10 # Espaçamento extra antes de pular para o próximo item principal
 
         y -= 20
         c.setFont("Helvetica-Bold", 12)
